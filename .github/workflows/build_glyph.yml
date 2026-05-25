@@ -1,4 +1,4 @@
-name: Build Glyph Mini 2040 
+name: Build Glyph Mini 2040
 
 on:
   push:
@@ -13,12 +13,25 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
+
+      - name: Init only required submodules
+        run: |
+          git submodule update --init lib/tinyusb
+          git submodule update --init lib/micropython-lib
+          git submodule update --init extmod/ulab
+          git submodule update --init tools/uf2
+          git submodule update --init ports/raspberrypi/sdk
+          git submodule update --init ports/raspberrypi/lib/Pico-PIO-USB
+          git submodule update --init ports/raspberrypi/lib/cyw43-driver
+          git submodule update --init ports/raspberrypi/lib/lwip
+          cd lib/tinyusb && git submodule update --init --recursive
+          cd ../../ports/raspberrypi/sdk && git submodule update --init --recursive
 
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y gcc-arm-none-eabi             libnewlib-arm-none-eabi build-essential cmake
+          sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi build-essential cmake python3-pip
           pip install huffman
 
       - name: Build firmware
@@ -30,4 +43,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: glyph-mini-2040-firmware
-          path: ports/raspberrypi/build-pcbcupid_mini_2040/firmware.uf2
+          path: ports/raspberrypi/build-pcbcupid_glyph_mini_2040/firmware.uf2
