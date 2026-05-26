@@ -69,7 +69,7 @@ for c in set(all_characters):
         filtered_characters = filtered_characters.replace(c, "")
         continue
     g = f.get_glyph(ord(c))
-    if g["shift"][1] != 0:
+    if g.shift_y != 0:
         raise RuntimeError("y shift")
 
 if missing > 0:
@@ -83,13 +83,13 @@ b = bytearray(bytes_per_row * tile_y)
 
 for x, c in enumerate(filtered_characters):
     g = f.get_glyph(ord(c))
-    start_bit = x * tile_x + g["bounds"][2]
-    start_y = (tile_y - 2) - (g["bounds"][1] + g["bounds"][3])
-    for y, row in enumerate(g["bitmap"].rows):
-        for i in range(g["bounds"][0]):
-            byte = i // 8
-            bit = i % 8
-            if row[byte] & (1 << (7 - bit)) != 0:
+    start_bit = x * tile_x + g.dx
+    start_y = (tile_y - 2) - (g.height + g.dy)
+    for y in range(g.height):
+        for i in range(g.width):
+            if g.bitmap[y * g.width + i]:
+                overall_bit = start_bit + (start_y + y) * bytes_per_row * 8 + i
+                b[overall_bit // 8] |= 1 << (7 - (overall_bit % 8))
                 overall_bit = start_bit + (start_y + y) * bytes_per_row * 8 + i
                 b[overall_bit // 8] |= 1 << (7 - (overall_bit % 8))
 
